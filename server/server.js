@@ -7,6 +7,24 @@ const io = require("socket.io")(3000, {
   },
 });
 
+const rooms = {};
+
 io.on("connection", (socket) => {
-  console.log("successful");
+  socket.on("join-room", (data) => {
+    const user = { id: socket.id, name: data.name, socket: socket };
+    let room = rooms[data.roomId];
+    if (room == null) {
+      room = { users: [], id: data.roomId };
+      rooms[data.roomsId] = room;
+    }
+    room.users.push(user);
+
+    socket.join(room.id);
+    console.log(room);
+    console.log("njj");
+
+    socket.on("disconnect", () => {
+      room.users = room.users.filter((userInRoom) => userInRoom !== user);
+    });
+  });
 });
