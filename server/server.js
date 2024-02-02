@@ -39,6 +39,10 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
       room.users = room.users.filter((userInRoom) => userInRoom !== user);
     });
+
+    socket.on("draw", (data) => {
+      socket.to(room.id).emit("draw-line", data.start, data.end);
+    });
   });
 });
 
