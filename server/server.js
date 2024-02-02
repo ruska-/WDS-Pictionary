@@ -8,6 +8,7 @@ const io = require("socket.io")(3000, {
 });
 
 const rooms = {};
+const WORDS = ["Dog", "Bike", "Human"];
 
 io.on("connection", (socket) => {
   socket.on("join-room", (data) => {
@@ -15,16 +16,32 @@ io.on("connection", (socket) => {
     let room = rooms[data.roomId];
     if (room == null) {
       room = { users: [], id: data.roomId };
-      rooms[data.roomsId] = room;
+      rooms[data.roomId] = room;
     }
     room.users.push(user);
 
     socket.join(room.id);
-    console.log(room);
-    console.log("njj");
+    console.log("leeengthhh " + room.users.length);
+
+    console.log(room.id + " " + data.name);
+    socket.on("ready", () => {
+      user.ready = true;
+      if (room.users.every((u) => u.ready)) {
+        console.log(room.users.length);
+        console.log(room.users);
+        room.word = getRandomeEntry(WORDS);
+        room.drawer = getRandomeEntry(room.users);
+        io.to(room.drawer.id).emit("start-drawing", room.word);
+        room.drawer.socket.to(room.id).emit("start-guessing");
+      }
+    });
 
     socket.on("disconnect", () => {
       room.users = room.users.filter((userInRoom) => userInRoom !== user);
     });
   });
 });
+
+function getRandomeEntry(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}

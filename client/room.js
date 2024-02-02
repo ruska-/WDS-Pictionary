@@ -18,8 +18,22 @@ const guessInput = document.querySelector("[data-guess-input]");
 const readyButton = document.querySelector("[data-ready-btn]");
 
 socket.emit("join-room", { name: name, roomId: roomId });
+socket.on("start-drawing", startRoundDrawer)
+socket.on("start-guessing", startRoundGuesser)
+endRound();
 
-console.log("meh");
+readyButton.addEventListener("click", () => {
+  hide(readyButton);
+  socket.emit("ready");
+});
+
+function startRoundGuesser() {
+  show(guessForm);
+}
+
+function startRoundDrawer(word) {
+  wordElement.innerText = word;
+}
 
 function endRound() {
   hide(guessForm);
@@ -27,4 +41,8 @@ function endRound() {
 
 function hide(element) {
   element.classList.add("hide");
+}
+
+function show(element) {
+  element.classList.remove("hide");
 }
