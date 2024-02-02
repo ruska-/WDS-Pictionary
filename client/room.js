@@ -18,19 +18,44 @@ const guessInput = document.querySelector("[data-guess-input]");
 const readyButton = document.querySelector("[data-ready-btn]");
 const canvas = document.querySelector("[data-canvas]");
 const drawableCanvas = new DrawableCanvas(canvas, socket);
+const guessTemplate = document.querySelector("[data-guess-template]");
 
 socket.emit("join-room", { name: name, roomId: roomId });
 socket.on("start-drawing", startRoundDrawer);
 socket.on("start-guessing", startRoundGuesser);
+socket.on("guess", displayGuess);
+socket.on("winner", endRound);
 endRound();
 resizeCanvas();
+setupHTMLEvents();
 
-readyButton.addEventListener("click", () => {
-  hide(readyButton);
-  socket.emit("ready");
-});
+function setupHTMLEvents() {
+  readyButton.addEventListener("click", () => {
+    hide(readyButton);
+    socket.emit("ready");
+  });
 
-window.addEventListener("resize", resizeCanvas);
+  guessForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    if (guessInput.value === "") return;
+
+    socket.emit("make-guess", { guess: guessInput.value });
+    displayGuess(name, guessInput.value);
+    guessInput.value = "";
+  });
+
+  window.addEventListener("resize", resizeCanvas);
+}
+
+function displayGuess(guesserName, guess) {
+  const guessElement = guessTemplate.content.cloneNode(true);
+  const messageElement = guessElement.querySelector("[data-text]");
+  const nameElement = guessElement.querySelector("[data-name]");
+  nameElement.innerText = guesserName;
+  messageElement.innerText = guess;
+  messagesElement.append(guessElement);
+}
 
 function resizeCanvas() {
   canvas.width = null;
@@ -42,14 +67,26 @@ function resizeCanvas() {
 
 function startRoundGuesser() {
   show(guessForm);
+  hide(wordElement);
+  messagesElement.innerHTML = "";
+  drawableCanvas.clearCanvas();
 }
 
 function startRoundDrawer(word) {
   drawableCanvas.canDraw = true;
+  drawableCanvas.clearCanvas();
   wordElement.innerText = word;
+  messagesElement.innerHTML = "";
 }
 
-function endRound() {
+function endRound(name, word) {
+  if (name && word) {
+    wordElement.innerText = word;
+    show(wordElement);
+    displayGuess(null, `${name} is the winner`);
+  }
+
+  show(readyButton);
   drawableCanvas.canDraw = false;
   hide(guessForm);
 }

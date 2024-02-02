@@ -3,9 +3,14 @@ export default function DrawableCanvas(canvas, socket) {
 
   this.canDraw = false;
 
+  this.clearCanvas = function () {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
   canvas.addEventListener("mousemove", (e) => {
     if (e.buttons !== 1 || !this.canDraw) {
-      //if we do not have left button down 
+      //if we do not have left button down
       prevPosition = null;
       return;
     }
